@@ -14,11 +14,11 @@ namespace JDZ\Language;
  */
 class LanguageInflect
 {
-	/**
-	 * Plural regexes
-	 * 
-	 * @var array
-	 */
+  /**
+   * Plural regexes
+   * 
+   * @var array
+   */
   protected static $plural = [
     '/(quiz)$/i'                      => "$1zes",
     '/^(ox)$/i'                       => "$1en",
@@ -42,11 +42,11 @@ class LanguageInflect
     '/$/'                             => "s",
   ];
   
-	/**
-	 * Singular regexes
-	 * 
-	 * @var array
-	 */
+  /**
+   * Singular regexes
+   * 
+   * @var array
+   */
   protected static $singular = [
     '/(quiz)zes$/i'                   => "$1",
     '/(matr)ices$/i'                  => "$1ix",
@@ -78,11 +78,11 @@ class LanguageInflect
     '/s$/'                            => "",
   ];   
   
-	/**
-	 * Irregular text strings
-	 * 
-	 * @var array
-	 */
+  /**
+   * Irregular text strings
+   * 
+   * @var array
+   */
   protected static $irregular = [
     'move'      => 'moves',
     'foot'      => 'feet',
@@ -94,11 +94,11 @@ class LanguageInflect
     'person'    => 'people',
   ];
   
-	/**
-	 * Uncountable text strings
-	 * 
-	 * @var array
-	 */
+  /**
+   * Uncountable text strings
+   * 
+   * @var array
+   */
   protected static $uncountable = [
     'sheep', 
     'fish',
@@ -114,8 +114,8 @@ class LanguageInflect
   /**
    * Add plural regexes
    * 
-   * @param 	array   $regexes  Plural regexes to add to the existing set
-   * @return 	void
+   * @param   array   $regexes  Plural regexes to add to the existing set
+   * @return   void
    */
   public static function addPlural(array $regexes=[]) 
   {
@@ -125,8 +125,8 @@ class LanguageInflect
   /**
    * Add singular regexes
    * 
-   * @param 	array   $regexes  Singular regexes to add to the existing set
-   * @return 	void
+   * @param   array   $regexes  Singular regexes to add to the existing set
+   * @return   void
    */
   public static function addSingular(array $regexes=[]) 
   {
@@ -136,8 +136,8 @@ class LanguageInflect
   /**
    * Add irregular strings
    * 
-   * @param 	array $strings Irregular text strings to add to the existing set
-   * @return 	void
+   * @param   array $strings Irregular text strings to add to the existing set
+   * @return   void
    */
   public static function addIrregular(array $strings=[]) 
   {
@@ -147,8 +147,8 @@ class LanguageInflect
   /**
    * Add uncountable strings
    * 
-   * @param 	array   $strings  Uncountable text strings to add to the existing set
-   * @return 	void
+   * @param   array   $strings  Uncountable text strings to add to the existing set
+   * @return   void
    */
   public static function addUncountable(array $strings=[]) 
   {
@@ -158,8 +158,8 @@ class LanguageInflect
   /**
    * Pluralize a string
    * 
-   * @param 	string  $string   Singular string
-   * @return 	string
+   * @param   string  $string   Singular string
+   * @return   string
    */
   public static function pluralize($string) 
   {
@@ -190,8 +190,8 @@ class LanguageInflect
   /**
    * Singularize a string
    * 
-   * @param 	string  $string   Plural string
-   * @return 	string
+   * @param   string  $string   Plural string
+   * @return   string
    */
   public static function singularize($string)
   {
@@ -222,9 +222,9 @@ class LanguageInflect
   /**
    * Pluralize a string according to a counter
    * 
-   * @param 	int     $count    Counter
-   * @param 	string  $string   Singular string
-   * @return 	string
+   * @param   int     $count    Counter
+   * @param   string  $string   Singular string
+   * @return   string
    */
   public static function pluralize_if($count, $string)
   {
@@ -238,8 +238,8 @@ class LanguageInflect
   /**
    * Check if string is plural
    * 
-   * @param 	string  $string   Plural string
-   * @return 	bool    True if plural
+   * @param   string  $string   Plural string
+   * @return   bool    True if plural
    */
   public static function isPlural($string)
   {
@@ -249,8 +249,8 @@ class LanguageInflect
   /**
    * Check if string is plural
    * 
-   * @param 	string  $string   Singular string
-   * @return 	bool    True if singular
+   * @param   string  $string   Singular string
+   * @return   bool    True if singular
    */
   public static function isSingular($string)
   {
