@@ -107,7 +107,7 @@ class Language
   public function __construct($lang=null)
   {
     if ( $lang === null ){
-      $lang = $this->default;
+      $lang = self::$default;
     }
     
     $this->lang     = $lang;

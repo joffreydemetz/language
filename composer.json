@@ -4,7 +4,7 @@
     "description": "Language management",
     "keywords": ["i18n","language"],
     "homepage": "http://joffreydemetz.com/git/language/",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "license": "MIT",
 
     "authors": [
