@@ -180,7 +180,8 @@ class Language
     $data = [];
     
     if ( count($keys) ){
-      $lang = Callisto()->language;
+      $lang = Callisto()->getLanguage();
+      
       foreach($keys as $key){
         $key = strtoupper($key);
         

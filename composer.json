@@ -3,23 +3,19 @@
 	"type": "library",
     "description": "Language management",
     "keywords": ["i18n","language"],
-    "homepage": "http://joffreydemetz.com/git/language/",
-    "version": "1.2.1",
+    "homepage": "https://github.com/joffreydemetz/language/",
+    "version": "1.2.2",
     "license": "MIT",
 
     "authors": [
         {
             "name": "Joffrey Demetz",
             "email": "joffrey.demetz@gmail.com",
-            "homepage": "http://joffreydemetz.com",
+            "homepage": "https://joffreydemetz.com",
             "role": "Lead"
         }
     ],
 
-    "require": {
-        "php": ">=5.6"
-    },
-    
     "autoload": {
         "psr-4": {
             "JDZ\\Language\\": "src"
