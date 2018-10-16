@@ -7,6 +7,14 @@
  */
 namespace JDZ\Language;
 
+use JDZ\Filesystem\Path;
+use JDZ\Filesystem\Folder;
+use JDZ\Filesystem\File;
+use Symfony\Component\Translation\Translator;
+use Symfony\Component\Translation\Loader\ArrayLoader;
+use Symfony\Component\Yaml\Yaml;
+use Symfony\Component\Yaml\YamlParseException;
+use RuntimeException;
 /**
  * Language Base Object
  * 
@@ -15,133 +23,164 @@ namespace JDZ\Language;
 class Language 
 {
   /**
-   * Loaded language code
+   * Translator instance
    * 
-   * @var string
+   * @var Translator
    */
-  public $lang;
+  public $translator;
   
   /**
-   * Language locale
+   * Language metadata
    * 
-   * @var array
+   * @var LanguageMetas
    */
-  public $locale;
+  public $metadata;
   
   /**
-   * Language tag
-   * 
-   * @var string
-   */
-  public $tag;
-  
-  /**
-   * Language code
-   * 
-   * @var string
-   */
-  public $code;
-  
-  /**
-   * Language name
-   * 
-   * @var string
-   */
-  public $name;
-  
-  /**
-   * Language is right to left
-   * 
-   * @var bool
-   */
-  public $rtl;
-  
-  /**
-   * Language first day
+   * Form Keys
    * 
    * @var int
    */
-  public $firstDay;
+  public $groupedKeys = [];
   
-  /**
-   * Default language code
-   * 
-   * @var string
-   */
-  protected static $default = 'fr-FR';
-  
-  /**
-   * Language loaded strings
-   * 
-   * @var array
-   */
-  protected $strings;
-  
-  
-  /**
-   * Loaded instance
-   * 
-   * @var Language
-   */
-  protected static $instance;
-  
-  /**
-   * Constructor
-   * 
-   * @param   string|null   $lang   Language code or null to use default
-   */
-  public static function getInstance($lang=null)
+  public static function create()
   {
-    if ( !isset(self::$instance) ){
-      self::$instance = new Language($lang);
-    }
-    
-    return self::$instance;
+    return new self();
+  }
+  
+  public function init()
+  {
+    $this->translator = new Translator($this->metadata->getIso());
+    $this->translator->addLoader('array', new ArrayLoader());
+    return $this;
   }
   
   /**
-   * Constructor
-   * 
-   * @param   string|null   $lang   Language code or null to use default
-   */
-  public function __construct($lang=null)
-  {
-    if ( $lang === null ){
-      $lang = self::$default;
-    }
-    
-    $this->lang     = $lang;
-    $this->name     = 'French (fr-FR)';
-    $this->tag      = 'fr-FR';
-    $this->code     = 'fr';
-    $this->rtl      = false;
-    $this->locale   = [ 'fr_FR.utf8', 'fr_FR.UTF-8', 'fr_FR.UTF-8@euro', 'fr_FR', 'fre_FR', 'fr', 'france' ];
-    $this->firstDay = 1;
-    $this->strings  = [];
-  }
-  
-  /**
-   * Set the locale config
+   * Load the language metadatas
    *
-   * @param   array     $metadata   Key/value pairs
-   * @return   void
+   * @param  string  $path  The path to a file
+   * @return $this
    */
-  public function setMetadata(array $metadata=[])
+  public function setMetas(string $path)
   {
-    foreach($metadata as $key => $value){
-      $this->{$key} = $value;
+    $this->metadata = LanguageMetas::create();
+    
+    $metas = $this->parseYmlFile($path);
+    
+    foreach($metas as $key => $value){
+      $method = 'set'.ucfirst($key);
+      if ( method_exists($this->metadata, $method) ){
+        $this->metadata->{$method}($value);
+      }
+      else {
+        throw new RuntimeException('Could not set '.$key.' in LanguageMetas object');
+      }
     }
+    
+    return $this;
+  }
+  
+  public function getMetadata()
+  {
+    return $this->metadata;
+  }
+  
+  public function getTranslator()
+  {
+    return $this->translator;
+  }
+  
+  public function addIrregular(string $path)
+  {
+    $irregulars = $this->parseYmlFile($path);
+    LanguageInflect::addIrregular($irregulars);
+    return $this;
+  }
+  
+  /**
+   * Appends strings from an INI file
+   *
+   * @param  string  $path  The path to a file
+   * @return $this
+   */
+  public function addIni(string $path, $locale=null, $domain=null)
+  {
+    if ( null === $locale ){
+      $locale = $this->metadata->getIso();
+    }
+    
+    if ( $strings = $this->parseIniFile($path) ){
+      $this->add($strings, $locale, $domain);
+    }
+    
+    return $this;
+  }
+
+  /**
+   * Appends strings from an YML file
+   *
+   * @param  string  $path  The path to a file
+   * @return $this
+   */
+  public function addYml(string $path, $locale=null, $domain=null)
+  {
+    if ( null === $locale ){
+      $locale = $this->metadata->getIso();
+    }
+    
+    if ( $strings = $this->parseYmlFile($path) ){
+      $this->add($strings, $locale, $domain);
+    }
+    
+    return $this;
   }
   
   /**
    * Appends the strings to the existing strings
    *
-   * @param   array     $strings   Key/value pairs of strings 
-   * @return   void
+   * @param  array  $strings  Key/value pairs of strings 
+   * @return void
    */
-  public function add(array $strings=[])
+  public function add(array $strings, $locale=null, $domain=null)
   {
-    $this->strings = array_merge($this->strings, $strings);
+    if ( null === $locale ){
+      $locale = $this->metadata->getIso();
+    }
+    
+    $this->storeGroupKeys($strings);
+    $this->translator->addResource('array', $strings, $locale, $domain);
+  }
+  
+  public function has($key, array $parameters=[], $domain=null, $locale=null)
+  {
+    $trad = $this->trans($key, $parameters, $domain, $locale);
+    if ( $trad !== $key ){
+      return true;
+    }
+    return false;
+  }
+  
+  public function trans($key, array $parameters=[], $domain=null, $locale=null)
+  {
+    $string = $this->translator->trans($key, $parameters, $domain, $locale);
+    // debugMe($key.' = '.$string);
+    return $string;
+  }
+  
+  /**
+   * Like sprintf but tries to pluralise the string
+   * 
+   * Behaves like the sprintf function
+   * 
+   * @param   string  $string  The base string
+   * @param   int     $n       The number of items
+   * @return  string  The translated string
+   */
+  public function plural($string, $n=0, array $parameters=[], $domain=null, $locale=null)
+  { 
+    $string = $this->translator->transChoice($string, $n, $parameters, $domain, $locale);
+    $string = str_replace(array('\\\\', '\t', '\n'), array("\\", "\t", "\n"), $string);
+    return $string;
   }
   
   /**
@@ -160,37 +199,9 @@ class Language
     
     if ( count($keys) ){
       foreach($keys as $key){
-        $key = strtoupper($key);
-        $default = $defaults === true ? $key : '';
-        $data[$key] = $this->hasKey($key) ? $this->_($key) : $default;
-      }      
-    }
-    
-    return $data;
-  }
-  
-  /**
-   * Loads strings for help
-   *
-   * @param   string    $keys       Text keys to return.
-   * @return   array     Array of translations
-    */
-  public function getHelp(array $keys=[])
-  {
-    $data = [];
-    
-    if ( count($keys) ){
-      $lang = Callisto()->getLanguage();
-      
-      foreach($keys as $key){
-        $key = strtoupper($key);
-        
-        $data[] = (object)[
-          'key'   => $key,
-          'label' => $lang->hasKey($key.'_LABEL') ? $lang->_($key.'_LABEL') : '',
-          'desc'  => $lang->hasKey($key) ? $lang->_($key) : '',
-        ];
-      }      
+        // $key = strtoupper($key);
+        $data[$key] = $this->trans($key);
+      }
     }
     
     return $data;
@@ -202,203 +213,27 @@ class Language
    * @param   string   $string                The string to translate
    * @return   string  The translation of the string
    */
-  public function _($string)
+  public function _($key, array $parameters=[])
   {
-    if ( $string == '' ){
+    if ( $key == '' ){
       return '';
     }
-
-    $key = strtoupper($string);
-
-    if ( isset($this->strings[$key]) ){
-      $string = $this->strings[$key];
-    }
     
-    // Interpret \n and \t characters
+    $string = $this->trans($key, $parameters);
     $string = str_replace(array('\\\\', '\t', '\n'), array("\\", "\t", "\n"), $string);
-    
     return $string;
   }
   
-  /**
-   * Return strtolower string
-   * 
-   * @param   string  $string  The base string
-   * @return  string 
-   */
-  public function strtolower($string)
-  { 
-    $string = $this->_($string);
-    return mb_strtolower($string);
-  }
-  
-  /**
-   * Return strtoupper string
-   * 
-   * @param   string  $string  The base string
-   * @return  string 
-   */
-  public function strtoupper($string)
-  { 
-    $string = $this->_($string);
-    return mb_strtoupper($string);
-  }
-  
-  /**
-   * Return ucfirst string
-   * 
-   * @param   string  $string  The base string
-   * @return  string 
-   */
-  public function ucfirst($string)
-  { 
-    $string = $this->_($string);
-    return ucfirst($string);
-  }
-  
-  /**
-   * Return lcfirst string
-   * 
-   * @param   string  $string  The base string
-   * @return  string 
-   */
-  public function lcfirst($string)
-  { 
-    $string = $this->_($string);
-    return lcfirst($string);
-  }
-  
-  /**
-   * Return ucwords string
-   * 
-   * @param   string  $string  The base string
-   * @return  string 
-   */
-  public function ucwords($string)
-  { 
-    $string = $this->_($string);
-    return ucwords($string);
-  }
-  
-  /**
-   * Like sprintf but tries to pluralise the string
-   * 
-   * Behaves like the sprintf function
-   * 
-   * @param   string  $string  The base string
-   * @param   int     $n       The number of items
-   * @return  string  The translated string
-   */
-  public function plural($string, $n=0)
-  { 
-    $args  = func_get_args();
-    $count = count($args);
-    
-    // Try the key from the language plural potential suffixes
-    $found = false;
-    $suffixes = $this->getPluralSuffixes((int)$n);
-    array_unshift($suffixes, (int)$n);
-    
-    foreach($suffixes as $suffix){
-      $key = $string.'_'.$suffix;
-      if ( $this->hasKey($key) ){
-        $found = true;
-        break;
+  public function getGroup(string $group, $domain=null, $locale=null)
+  {
+    $trads = [];
+    if ( isset($this->groupedKeys[$group]) ){
+      $this->groupedKeys[$group] = array_unique($this->groupedKeys[$group]);
+      foreach($this->groupedKeys[$group] as $key => $value){
+        $trads[$key] = $this->_($value, [], $domain, $locale);
       }
     }
-    
-    if ( !$found ){
-      // Not found so revert to the original.
-      $key = $string;
-    }
-    
-    $args[0] = $this->_($key);
-    return call_user_func_array('sprintf', $args);
-  }
-  
-  /**
-   * Passes a string thru a sprintf.
-   * 
-   * Note that this method can take a mixed number of arguments as for the sprintf function.
-   * 
-   * @param   string  $string  The base string.
-   * @return   string  The translated string.
-   */
-  public function sprintf($string)
-  {
-    $args  = func_get_args();
-    $count = count($args);
-    
-    $args[0] = $this->_($string);
-    $args[0] = preg_replace('/\[\[%([0-9]+):[^\]]*\]\]/', '%\1$s', $args[0]);
-    return call_user_func_array('sprintf', $args);
-  }
-  
-  /**
-   * Passes a string thru an printf.
-   * 
-   * Note that this method can take a mixed number of arguments as for the sprintf function.
-   * 
-   * @param   string  $string  The base string.
-   * @return   string  The translated string.
-   */
-  public function printf($string)
-  {
-    $args  = func_get_args();
-    $count = count($args);
-    
-    $args[0] = $this->_($string);
-    return call_user_func_array('printf', $args);
-  }
-  
-  /**
-   * Determines is a key exists.
-   *
-   * @param   string  $string  The key to check.
-   * @return   boolean  True, if the key exists.
-   */
-  public function hasKey($string)
-  {
-    $key = strtoupper($string);
-    return isset($this->strings[$key]);
-  }
-  
-  /**
-   * Retrieve the list of key/value pairs starting with a given prefix
-   * 
-   * used in admin/items search for translated fields
-   * 
-   * @param   $prefix   The prefix to look for
-   * @return   array key/value pairs where key is without prefix
-   */
-  public function getSome($prefix)
-  {
-    $strings=[];
-    foreach($this->strings as $key => $value){
-      if ( preg_match("/^".$prefix."(.+)$/", $key, $m) ){
-        $strings[$m[1]] = $value;
-      }
-    }
-    return $strings;
-  }
-  
-  /**
-   * Retrieve the list of key/value pairs filtered by regex
-   * 
-   * @param   string          $regex        The filter
-   * @param   callable|null   $callback     The preg match callback function
-   * @return   array           Key/value pairs
-   */
-  public function getByRegex($regex, $callback=null)
-  {
-    $strings=[];
-    foreach($this->strings as $key => $value){
-      if ( preg_match("/^".$regex."$/", $key, $m) ){
-        $k = $callback === null ? $m[1] : $callback($m);
-        $strings[$k] = $value;
-      }
-    }
-    return $strings;
+    return $trads;
   }
   
   /**
@@ -527,13 +362,73 @@ class Language
   }
 
   /**
-   * Print all strings
+   * Extract translations from INI file
    *
-   * @return   void
+   * @param  string  $path  The path of ini file
+   * @return array   Key/Value pairs of translations
    */
-  public function debug()
+  protected function parseIniFile($path)
   {
-    ksort($this->strings);
-    debugMe($this->strings)->end();
+    $strings = [];
+    
+    if ( file_exists($path) ){
+      $php_errormsg = null;
+      $track_errors = ini_get('track_errors');
+      ini_set('track_errors', true);
+      
+      $contents = file_get_contents($path);
+      $contents = str_replace('_QQ_', '"', $contents);
+      $strings  = parse_ini_string($contents, false, INI_SCANNER_RAW);
+      
+      $clean=[];
+      foreach($strings as $key => $value){
+        if ( substr($key, 0, 1) === '_' ){
+          $key = substr($key, 1);
+        }
+        $clean[$key] = $value;
+      }
+      $strings = $clean;
+      
+      ini_set('track_errors', $track_errors);
+    }
+    
+    return $strings;
+  }
+  
+  /**
+   * Extract translations from YML file
+   *
+   * @param  string  $path  The path of yml file
+   * @return array   Key/Value pairs of translations
+   */
+  protected function parseYmlFile($path)
+  {
+    try {
+      $strings = Yaml::parse( File::read($path) );
+    } 
+    catch(YamlParseException $e){
+      $strings = [];
+      throw new RuntimeException("Unable to parse the YAML string: %s", $e->getMessage());
+    }
+    
+    return $strings;
+  }
+  
+  protected function storeGroupKeys($strings)
+  {
+    foreach($strings as $key => $value){
+      if ( preg_match("/^FILESYSTEM_(.+)$/", $key, $m) ){
+        $this->groupedKeys['filesystem'][$m[1]] = $key;
+      }
+      elseif ( preg_match("/^DATE_((DAY|MONTH)_.+)$/", $key, $m) ){
+        $this->groupedKeys['date'][$m[1]] = $key;
+      }
+      elseif ( preg_match("/^DATABASE_(.+)$/", $key, $m) ){
+        $this->groupedKeys['database'][$m[1]] = $key;
+      }
+      elseif ( preg_match("/^((ERROR_FORM_FIELD|HELP_FIELD|FIELD|FIELDSET)_.+)$/", $key, $m) ){
+        $this->groupedKeys['form'][$m[1]] = $key;
+      }
+    }
   }
 }

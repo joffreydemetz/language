@@ -4,7 +4,7 @@
     "description": "Language management",
     "keywords": ["i18n","language"],
     "homepage": "https://github.com/joffreydemetz/language/",
-    "version": "2.0.1",
+    "version": "2.0.2",
     "license": "MIT",
 
     "authors": [
@@ -23,9 +23,6 @@
     "autoload": {
         "psr-4": {
             "JDZ\\Language\\": "src"
-        },
-        "files": [
-            "shortcuts.php"
-        ]
+        }
     }
 }
