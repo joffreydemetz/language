@@ -163,7 +163,22 @@ class Language
   public function trans($key, array $parameters=[], $domain=null, $locale=null)
   {
     $string = $this->translator->trans($key, $parameters, $domain, $locale);
-    // debugMe($key.' = '.$string);
+    
+    $lang = $this;
+    
+    $string = preg_replace_callback("/[\*]{3,}([A-Z_]+)[\*]{3,}/", function($m) use($lang, $parameters, $domain, $locale){
+      return $lang->trans($m[1], $parameters, $domain, $locale);
+    }, $string);
+    
+    // if ( preg_match("/^[\*]{3,}([A-Z_]+)[\*]{3,}$/", $string, $m) ){
+      // return $this->trans($m[1], $parameters, $domain, $locale);
+    // }
+    
+    if ( $string === $key ){
+      // throw new \Exception($key);
+      debugMe($key);
+    }
+    
     return $string;
   }
   
