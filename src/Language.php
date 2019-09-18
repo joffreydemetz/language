@@ -174,10 +174,10 @@ class Language
       // return $this->trans($m[1], $parameters, $domain, $locale);
     // }
     
-    if ( $string === $key ){
+    // if ( $string === $key ){
       // throw new \Exception($key);
-      debugMe($key);
-    }
+      // debugMe($key);
+    // }
     
     return $string;
   }
