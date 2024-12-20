@@ -1,6 +1,6 @@
 # Language
 
-`Language` is a proxy I use to `symfony/translation` component.
+`Language` is a proxy I use to symfony/translation component.
 This project simplifies my use of language files and provides a clear API for easily handling translations.
 
 ## Features
