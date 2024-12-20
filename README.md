@@ -36,6 +36,7 @@ $language = new Language(
     // default language
     'fr'
 );
+```
 
 ### load user language
 if not an available languages it falls back to the default language
