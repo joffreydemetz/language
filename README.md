@@ -1,6 +1,7 @@
 # Language
 
-`Language` is a proxy I use to `symfony/translation` component is a modular PHP package designed for managing and translating multilingual content in your web projects. This project simplifies the use of language files and provides a clear API for easily handling translations.
+`Language` is a proxy I use to `symfony/translation` component.
+This project simplifies my use of language files and provides a clear API for easily handling translations.
 
 ## Features
 
