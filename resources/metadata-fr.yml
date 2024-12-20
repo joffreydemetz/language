@@ -1,0 +1,16 @@
+iso: fr_FR
+name: "French (fr-FR)"
+label: "Français"
+inflector: "french"
+tag: fr-FR
+code: fr
+rtl: false
+firstDay: 1
+locale:
+    - fr_FR.utf8
+    - fr_FR.UTF-8
+    - fr_FR.UTF-8@euro
+    - fr_FR
+    # - fre_FR
+    - fr
+    - france

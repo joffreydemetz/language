@@ -1,8 +1,3 @@
-# language
-Translator I use for some multilingual projects
-
-Here's an example:
-```
 <?php
 require_once realpath(__DIR__ . '/../vendor/autoload.php');
 
@@ -25,4 +20,3 @@ $language->loadYmlFile(__DIR__ . '/example.yml');
 
 echo $language->get('test.key2');
 exit();
-```

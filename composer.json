@@ -1,0 +1,32 @@
+{
+    "name": "jdz/language",
+    "type": "library",
+    "description": "JDZ Translator",
+    "keywords": [
+        "JDZ",
+        "i18n",
+        "language",
+        "translate",
+        "inflect"
+    ],
+    "homepage": "https://jdz.joffreydemetz.com/language/",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Joffrey Demetz",
+            "email": "joffrey.demetz@gmail.com",
+            "homepage": "https://joffreydemetz.com",
+            "role": "Lead"
+        }
+    ],
+    "require": {
+        "symfony/translation": "^6.4",
+        "symfony/string": "^6.4",
+        "symfony/yaml": "^6.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "JDZ\\Language\\": "src"
+        }
+    }
+}

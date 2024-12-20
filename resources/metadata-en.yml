@@ -1,0 +1,15 @@
+iso: en_GB
+name: "English (en-GB)"
+label: "English"
+inflector: "english"
+tag: en-GB
+code: en
+rtl: false
+firstDay: 1
+locale:
+    - en_GB.utf8
+    - en_GB.UTF-8
+    - en_GB.UTF-8@euro
+    - en_GB
+    - en
+    - us

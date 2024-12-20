@@ -1,0 +1,15 @@
+iso: es-ES
+name: "Spanish (es-ES)"
+label: "Español"
+inflector: "spanish"
+tag: es-ES
+code: es
+rtl: false
+firstDay: 1
+locale:
+    - es_ES.utf8
+    - es_ES.UTF-8
+    - es_ES.UTF-8@euro
+    - es_ES
+    - es
+    - spain
