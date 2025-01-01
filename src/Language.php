@@ -166,6 +166,12 @@ class Language
     return $this;
   }
 
+  public function set(string $key, mixed $value, ?string $locale = null, string $domain = 'messages')
+  {
+    $this->loadArray([$key => $value], $locale, $domain);
+    return $this;
+  }
+
   public function get(string $key, array $parameters = [], ?string $default = null): string
   {
     if ('' === $key) {
