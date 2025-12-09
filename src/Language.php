@@ -1,15 +1,14 @@
 <?php
 
 /**
- * (c) Joffrey Demetz <joffrey.demetz@gmail.com>
- * 
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
+ * @author    Joffrey Demetz <joffrey.demetz@gmail.com>
+ * @license   MIT License; <https://opensource.org/licenses/MIT>
  */
 
 namespace JDZ\Language;
 
 use JDZ\Language\Metas;
+use JDZ\Language\LanguageCode;
 use Symfony\Component\Translation\Translator;
 use Symfony\Component\Translation\Loader\ArrayLoader;
 use Symfony\Component\Translation\Loader\YamlFileLoader;
@@ -17,18 +16,8 @@ use Symfony\Component\String\Inflector\InflectorInterface;
 use Symfony\Component\Yaml\Yaml;
 use Symfony\Component\Yaml\Exception\ParseException;
 
-/**
- * Language proxy to symfony translator component
- * 
- * @author Joffrey Demetz <joffrey.demetz@gmail.com>
- */
 class Language
 {
-  const FRENCH = 'fr';
-  const ENGLISH = 'en';
-  const SPANISH = 'es';
-
-  public array $availableLanguages = [self::FRENCH, self::ENGLISH, self::SPANISH];
   public array $languages;
   public string $defaultLang;
 
@@ -38,7 +27,7 @@ class Language
 
   public function __construct(array $languages = [], ?string $defaultLang = null)
   {
-    $this->defaultLang = $defaultLang ?? self::FRENCH;
+    $this->defaultLang = $defaultLang ?? LanguageCode::FRENCH->value;
     $this->languages = $this->determineLanguages($languages);
   }
 
@@ -47,9 +36,9 @@ class Language
    */
   public function load(string $lang)
   {
-    if (!in_array($lang, $this->availableLanguages)) {
+    if (!LanguageCode::isValid($lang)) {
       throw new \Exception('Requested language ' . $lang . ' is not available. '
-        . 'Choose one of ' . implode(', ', $this->availableLanguages));
+        . 'Choose one of ' . implode(', ', array_map(fn(LanguageCode $case) => $case->value, LanguageCode::cases())));
     }
 
     $this->metadata = $this->determineMetadata($lang);
@@ -72,7 +61,7 @@ class Language
     \array_unshift($languages, $this->defaultLang);
 
     foreach ($languages as $i => $language) {
-      if (!in_array($language, $this->availableLanguages)) {
+      if (!LanguageCode::isValid($language)) {
         unset($language[$i]);
       }
     }
