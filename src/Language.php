@@ -7,7 +7,7 @@
 
 namespace JDZ\Language;
 
-use JDZ\Language\Metas;
+use JDZ\Language\LanguageMetas;
 use JDZ\Language\LanguageCode;
 use JDZ\Language\LanguageException;
 use Symfony\Component\Translation\Translator;
@@ -22,7 +22,7 @@ class Language
   public array $languages;
   public string $defaultLang;
 
-  public Metas $metadata;
+  public LanguageMetas $metadata;
   public ?InflectorInterface $inflector = null;
   public Translator $translator;
 
@@ -70,13 +70,13 @@ class Language
     return \array_unique($languages);
   }
 
-  protected function determineMetadata(string $lang): Metas
+  protected function determineMetadata(string $lang): LanguageMetas
   {
     if (false === ($metas = $this->loadLangMetadata($lang))) {
       throw new LanguageException('Unable to load language metas for ' . $lang);
     }
 
-    $metadata = new Metas();
+    $metadata = new LanguageMetas();
     $metadata->load($metas);
 
     return $metadata;
