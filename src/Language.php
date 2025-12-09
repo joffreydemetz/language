@@ -9,6 +9,7 @@ namespace JDZ\Language;
 
 use JDZ\Language\Metas;
 use JDZ\Language\LanguageCode;
+use JDZ\Language\LanguageException;
 use Symfony\Component\Translation\Translator;
 use Symfony\Component\Translation\Loader\ArrayLoader;
 use Symfony\Component\Translation\Loader\YamlFileLoader;
@@ -37,7 +38,7 @@ class Language
   public function load(string $lang)
   {
     if (!LanguageCode::isValid($lang)) {
-      throw new \Exception('Requested language ' . $lang . ' is not available. '
+      throw new LanguageException('Requested language ' . $lang . ' is not available. '
         . 'Choose one of ' . implode(', ', array_map(fn(LanguageCode $case) => $case->value, LanguageCode::cases())));
     }
 
@@ -72,7 +73,7 @@ class Language
   protected function determineMetadata(string $lang): Metas
   {
     if (false === ($metas = $this->loadLangMetadata($lang))) {
-      throw new \Exception('Unable to load language metas for ' . $lang);
+      throw new LanguageException('Unable to load language metas for ' . $lang);
     }
 
     $metadata = new Metas();
