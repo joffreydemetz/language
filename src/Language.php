@@ -63,7 +63,7 @@ class Language
 
     foreach ($languages as $i => $language) {
       if (!LanguageCode::isValid($language)) {
-        unset($language[$i]);
+        unset($languages[$i]);
       }
     }
 
@@ -191,7 +191,7 @@ class Language
     return $trad !== $key;
   }
 
-  protected function trans(string $key, array $parameters = [], string $domain = null, string $locale = null, int $pass = 1): string
+  protected function trans(string $key, array $parameters = [], ?string $domain = null, ?string $locale = null, int $pass = 1): string
   {
     $string = $this->translator->trans($key, $parameters, $domain, $locale);
 
@@ -213,7 +213,7 @@ class Language
     return $string;
   }
 
-  public function plural(string $key, int $count = 0, array $parameters = [], string $domain = null, string $locale = null): string
+  public function plural(string $key, int $count = 0, array $parameters = [], ?string $domain = null, ?string $locale = null): string
   {
     $parameters['%count%'] = $count;
     return $this->get($key, $parameters, $domain, $locale);
