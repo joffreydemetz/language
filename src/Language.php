@@ -121,7 +121,7 @@ class Language
   public function loadYamlFiles(array $resources, ?string $locale = null, string $domain = 'messages')
   {
     foreach ($resources as $resource) {
-      $this->loadYmlFile($resource, $locale, $domain);
+      $this->loadYamlFile($resource, $locale, $domain);
     }
     return $this;
   }
@@ -130,7 +130,7 @@ class Language
    * Appends strings from a YML file
    * key: value pairs
    */
-  public function loadYmlFile(string $resource, ?string $locale = null, string $domain = 'messages')
+  public function loadYamlFile(string $resource, ?string $locale = null, string $domain = 'messages')
   {
     if (null === $locale) {
       $locale = $this->metadata->iso;
@@ -139,6 +139,14 @@ class Language
     $this->translator->addResource('yaml', $resource, $locale, $domain);
 
     return $this;
+  }
+
+  /**
+   * @deprecated use loadYamlFile instead
+   */
+  public function loadYmlFile(string $resource, ?string $locale = null, string $domain = 'messages')
+  {
+    return $this->loadYamlFile($resource, $locale, $domain);
   }
 
   /**
