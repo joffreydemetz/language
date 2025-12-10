@@ -45,6 +45,7 @@ class LanguageMetas
 
   public function isValid(): bool
   {
-    return $this->iso && $this->tag && $this->label && $this->code && $this->name && $this->locale;
+    return isset($this->iso) && isset($this->tag) && isset($this->label)
+      && isset($this->code) && isset($this->name) && isset($this->locale);
   }
 }
