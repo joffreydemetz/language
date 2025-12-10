@@ -16,7 +16,9 @@ $language->loadArray([
     ],
     'test2' => 'Test 2',
 ]);
-$language->loadYmlFile(__DIR__ . '/example.yml');
+$language->loadYamlFile(__DIR__ . '/example.yml');
 
-echo $language->get('test.key2');
+echo $language->get('hi') . "\n";
+echo $language->get('test.key2') . "\n";
+echo $language->get('unknown', [], "Default value") . "\n";
 exit();

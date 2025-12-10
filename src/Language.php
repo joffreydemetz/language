@@ -1,15 +1,15 @@
 <?php
 
 /**
- * (c) Joffrey Demetz <joffrey.demetz@gmail.com>
- * 
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
+ * @author    Joffrey Demetz <joffrey.demetz@gmail.com>
+ * @license   MIT License; <https://opensource.org/licenses/MIT>
  */
 
 namespace JDZ\Language;
 
-use JDZ\Language\Metas;
+use JDZ\Language\LanguageMetas;
+use JDZ\Language\LanguageCode;
+use JDZ\Language\LanguageException;
 use Symfony\Component\Translation\Translator;
 use Symfony\Component\Translation\Loader\ArrayLoader;
 use Symfony\Component\Translation\Loader\YamlFileLoader;
@@ -17,28 +17,18 @@ use Symfony\Component\String\Inflector\InflectorInterface;
 use Symfony\Component\Yaml\Yaml;
 use Symfony\Component\Yaml\Exception\ParseException;
 
-/**
- * Language proxy to symfony translator component
- * 
- * @author Joffrey Demetz <joffrey.demetz@gmail.com>
- */
 class Language
 {
-  const FRENCH = 'fr';
-  const ENGLISH = 'en';
-  const SPANISH = 'es';
-
-  public array $availableLanguages = [self::FRENCH, self::ENGLISH, self::SPANISH];
   public array $languages;
   public string $defaultLang;
 
-  public Metas $metadata;
+  public LanguageMetas $metadata;
   public ?InflectorInterface $inflector = null;
   public Translator $translator;
 
   public function __construct(array $languages = [], ?string $defaultLang = null)
   {
-    $this->defaultLang = $defaultLang ?? self::FRENCH;
+    $this->defaultLang = $defaultLang ?? LanguageCode::FRENCH->value;
     $this->languages = $this->determineLanguages($languages);
   }
 
@@ -47,9 +37,9 @@ class Language
    */
   public function load(string $lang)
   {
-    if (!in_array($lang, $this->availableLanguages)) {
-      throw new \Exception('Requested language ' . $lang . ' is not available. '
-        . 'Choose one of ' . implode(', ', $this->availableLanguages));
+    if (!LanguageCode::isValid($lang)) {
+      throw new LanguageException('Requested language ' . $lang . ' is not available. '
+        . 'Choose one of ' . implode(', ', array_map(fn(LanguageCode $case) => $case->value, LanguageCode::cases())));
     }
 
     $this->metadata = $this->determineMetadata($lang);
@@ -72,21 +62,21 @@ class Language
     \array_unshift($languages, $this->defaultLang);
 
     foreach ($languages as $i => $language) {
-      if (!in_array($language, $this->availableLanguages)) {
-        unset($language[$i]);
+      if (!LanguageCode::isValid($language)) {
+        unset($languages[$i]);
       }
     }
 
     return \array_unique($languages);
   }
 
-  protected function determineMetadata(string $lang): Metas
+  protected function determineMetadata(string $lang): LanguageMetas
   {
     if (false === ($metas = $this->loadLangMetadata($lang))) {
-      throw new \Exception('Unable to load language metas for ' . $lang);
+      throw new LanguageException('Unable to load language metas for ' . $lang);
     }
 
-    $metadata = new Metas();
+    $metadata = new LanguageMetas();
     $metadata->load($metas);
 
     return $metadata;
@@ -131,7 +121,7 @@ class Language
   public function loadYamlFiles(array $resources, ?string $locale = null, string $domain = 'messages')
   {
     foreach ($resources as $resource) {
-      $this->loadYmlFile($resource, $locale, $domain);
+      $this->loadYamlFile($resource, $locale, $domain);
     }
     return $this;
   }
@@ -140,7 +130,7 @@ class Language
    * Appends strings from a YML file
    * key: value pairs
    */
-  public function loadYmlFile(string $resource, ?string $locale = null, string $domain = 'messages')
+  public function loadYamlFile(string $resource, ?string $locale = null, string $domain = 'messages')
   {
     if (null === $locale) {
       $locale = $this->metadata->iso;
@@ -149,6 +139,14 @@ class Language
     $this->translator->addResource('yaml', $resource, $locale, $domain);
 
     return $this;
+  }
+
+  /**
+   * @deprecated use loadYamlFile instead
+   */
+  public function loadYmlFile(string $resource, ?string $locale = null, string $domain = 'messages')
+  {
+    return $this->loadYamlFile($resource, $locale, $domain);
   }
 
   /**
@@ -193,7 +191,7 @@ class Language
     return $trad !== $key;
   }
 
-  protected function trans(string $key, array $parameters = [], string $domain = null, string $locale = null, int $pass = 1): string
+  protected function trans(string $key, array $parameters = [], ?string $domain = null, ?string $locale = null, int $pass = 1): string
   {
     $string = $this->translator->trans($key, $parameters, $domain, $locale);
 
@@ -215,7 +213,7 @@ class Language
     return $string;
   }
 
-  public function plural(string $key, int $count = 0, array $parameters = [], string $domain = null, string $locale = null): string
+  public function plural(string $key, int $count = 0, array $parameters = [], ?string $domain = null, ?string $locale = null): string
   {
     $parameters['%count%'] = $count;
     return $this->get($key, $parameters, $domain, $locale);

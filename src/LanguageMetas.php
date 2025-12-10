@@ -1,20 +1,15 @@
 <?php
 
 /**
- * (c) Joffrey Demetz <joffrey.demetz@gmail.com>
- * 
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
+ * @author    Joffrey Demetz <joffrey.demetz@gmail.com>
+ * @license   MIT License; <https://opensource.org/licenses/MIT>
  */
 
 namespace JDZ\Language;
 
-/**
- * Language metas 
- * 
- * @author Joffrey Demetz <joffrey.demetz@gmail.com>
- */
-class Metas
+use JDZ\Language\LanguageException;
+
+class LanguageMetas
 {
   /**
    * ISO-Alpha-2 code
@@ -32,24 +27,25 @@ class Metas
   public function load(array $data)
   {
     if (empty($data)) {
-      throw new \Exception('No metadata for the Metas object');
+      throw new LanguageException('No metadata for the Metas object');
     }
 
     foreach ($data as $property => $value) {
       if (!property_exists($this, $property)) {
-        throw new \Exception('Could not set ' . $property . ' in Metas object');
+        continue;
       }
 
       $this->{$property} = $value;
     }
 
     if (false === $this->isValid()) {
-      throw new \Exception('Invalid language metadata');
+      throw new LanguageException('Invalid language metadata');
     }
   }
 
   public function isValid(): bool
   {
-    return $this->iso && $this->tag && $this->label && $this->code && $this->name && $this->locale;
+    return isset($this->iso) && isset($this->tag) && isset($this->label)
+      && isset($this->code) && isset($this->name) && isset($this->locale);
   }
 }
