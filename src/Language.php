@@ -186,6 +186,14 @@ class Language implements LanguageInterface
     return $string;
   }
 
+  public function getIf(string $key, array $parameters = [], ?string $default = null): string
+  {
+    if ('' === $key || false === $this->has($key)) {
+      return $default ?: $key;
+    }
+    return $this->get($key, $parameters);
+  }
+
   public function has(string $key, array $parameters = [], ?string $domain = null, ?string $locale = null): bool
   {
     $trad = $this->trans($key, $parameters, $domain, $locale);
