@@ -7,6 +7,7 @@
 
 namespace JDZ\Language;
 
+use JDZ\Language\Contract\LanguageInterface;
 use JDZ\Language\LanguageMetas;
 use JDZ\Language\LanguageCode;
 use JDZ\Language\LanguageException;
@@ -17,7 +18,7 @@ use Symfony\Component\String\Inflector\InflectorInterface;
 use Symfony\Component\Yaml\Yaml;
 use Symfony\Component\Yaml\Exception\ParseException;
 
-class Language
+class Language implements LanguageInterface
 {
   public array $languages;
   public string $defaultLang;
