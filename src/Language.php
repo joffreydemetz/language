@@ -7,6 +7,7 @@
 
 namespace JDZ\Language;
 
+use JDZ\Language\Contract\LanguageInterface;
 use JDZ\Language\LanguageMetas;
 use JDZ\Language\LanguageCode;
 use JDZ\Language\LanguageException;
@@ -17,7 +18,7 @@ use Symfony\Component\String\Inflector\InflectorInterface;
 use Symfony\Component\Yaml\Yaml;
 use Symfony\Component\Yaml\Exception\ParseException;
 
-class Language
+class Language implements LanguageInterface
 {
   public array $languages;
   public string $defaultLang;
@@ -183,6 +184,14 @@ class Language
     $string = $this->trans($key, $parameters);
     $string = str_replace(array('\\\\', '\t', '\n'), array("\\", "\t", "\n"), $string);
     return $string;
+  }
+
+  public function getIf(string $key, array $parameters = [], ?string $default = null): string
+  {
+    if ('' === $key || false === $this->has($key)) {
+      return $default ?: $key;
+    }
+    return $this->get($key, $parameters);
   }
 
   public function has(string $key, array $parameters = [], ?string $domain = null, ?string $locale = null): bool
