@@ -155,6 +155,15 @@ class LanguageTest extends TestCase
         $this->assertStringContainsString('5', $result);
     }
 
+    public function testPluralUsesDomain(): void
+    {
+        $language = new Language();
+        $language->load('en');
+        $language->loadArray(['items' => 'There are %count% shop items'], null, 'shop');
+
+        $this->assertEquals('There are 3 shop items', $language->plural('items', 3, [], 'shop'));
+    }
+
     public function testPluralize(): void
     {
         $language = new Language();

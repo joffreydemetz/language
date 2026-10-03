@@ -181,9 +181,7 @@ class Language implements LanguageInterface
       return $default;
     }
 
-    $string = $this->trans($key, $parameters);
-    $string = str_replace(array('\\\\', '\t', '\n'), array("\\", "\t", "\n"), $string);
-    return $string;
+    return $this->unescape($this->trans($key, $parameters));
   }
 
   public function getIf(string $key, array $parameters = [], ?string $default = null): string
@@ -198,6 +196,11 @@ class Language implements LanguageInterface
   {
     $trad = $this->trans($key, $parameters, $domain, $locale);
     return $trad !== $key;
+  }
+
+  protected function unescape(string $string): string
+  {
+    return str_replace(array('\\\\', '\t', '\n'), array("\\", "\t", "\n"), $string);
   }
 
   protected function trans(string $key, array $parameters = [], ?string $domain = null, ?string $locale = null, int $pass = 1): string
@@ -225,7 +228,7 @@ class Language implements LanguageInterface
   public function plural(string $key, int $count = 0, array $parameters = [], ?string $domain = null, ?string $locale = null): string
   {
     $parameters['%count%'] = $count;
-    return $this->get($key, $parameters, $domain, $locale);
+    return $this->unescape($this->trans($key, $parameters, $domain, $locale));
   }
 
   public function pluralize(string $string): string
