@@ -26,13 +26,13 @@ composer require jdz/language
 ## Requirements
 
 - PHP 8.2 or higher
-- symfony/translation
-- symfony/string
-- symfony/yaml
+- symfony/translation ^7.4
+- symfony/string ^7.4
+- symfony/yaml ^7.4
 
 ## Usage
 
-For a complete example, check the `example` folder in the repository.
+For a complete example, check `example/example.php` (and its `example/example.yml`) in the repository.
 
 ### Initialization
 
@@ -49,7 +49,8 @@ $language = new Language(
 
 ### Load User Language
 
-If not an available language, it falls back to the default language.
+The code must be one of the `LanguageCode` cases (`fr`, `en`, `es`); anything else throws a `LanguageException`.
+Loading reads the language metadata shipped in `resources/metadata-<code>.yml`, picks the matching inflector and sets the process locale (`setlocale(LC_ALL, …)`).
 
 ```php
 $language->load('fr');
@@ -129,18 +130,32 @@ $lang = LanguageCode::tryFrom('en'); // Returns LanguageCode::ENGLISH or null
 
 ### Language Class Methods
 
+The loaders and `set()` also accept an optional `?string $locale` (defaults to the loaded language) and `string $domain = 'messages'`.
+
 | Method            | Description |
 |-------------------|-------------|
+| `__construct(array $languages = [], ?string $defaultLang = null)` | App languages and default language (`fr` when omitted). Invalid codes are dropped. |
 | `load(string $lang)` | Load a user language. Throws `LanguageException` if invalid. |
 | `loadYamlFiles(array $resources)` | Load translations from an array of YAML files. |
-| `loadYamlFile(string $resource)` | Load translations from a single YAML file. |
+| `loadYamlFile(string $resource)` | Load translations from a single YAML file (`loadYmlFile()` is a deprecated alias). |
 | `loadArray(array $strings)` | Load translations from an array of key => value pairs. |
 | `set(string $key, mixed $value)` | Adds a translation. |
 | `get(string $key, array $parameters = [], ?string $default = null)` | Retrieves a translation at the specified path. |
-| `has(string $key)` | Checks if a translation exists at the specified path. |
-| `plural(string $key, int $count)` | Load a plural translation with count parameter. |
+| `getIf(string $key, array $parameters = [], ?string $default = null)` | Same, but returns `$default` (or the key) when the translation is missing. |
+| `has(string $key, array $parameters = [], ?string $domain = null, ?string $locale = null)` | Checks if a translation exists at the specified path. |
+| `plural(string $key, int $count = 0, array $parameters = [], ?string $domain = null, ?string $locale = null)` | Load a plural translation with count parameter (`%count%`). |
 | `pluralize(string $string)` | Uses the symfony/string inflector to pluralize a word. |
 | `singularize(string $string)` | Uses the symfony/string inflector to singularize a word. |
+
+After `load()`, the public `$metadata` property holds the loaded `LanguageMetas`.
+
+### Other classes
+
+| Class | Description |
+|-------|-------------|
+| `JDZ\Language\LanguageMetas` | Language metadata (`iso`, `tag`, `label`, `code`, `name`, `inflector`, `rtl`, `firstDay`, `locale`) loaded from `resources/metadata-<code>.yml`. |
+| `JDZ\Language\Inflector\DefaultInflector` | No-op inflector (returns the word unchanged), used when no symfony/string inflector matches the language. |
+| `JDZ\Language\Contract\LanguageInterface` | `get()`, `getIf()`, `has()` — the contract `Language` implements. |
 
 ### LanguageCode Enum
 
@@ -158,7 +173,7 @@ Custom exception class for language-specific errors. Extends `\Exception`.
 
 ## Testing
 
-The package includes a comprehensive test suite with 38 tests covering all functionality.
+The package includes a PHPUnit test suite (`tests/`).
 
 To run the tests:
 
