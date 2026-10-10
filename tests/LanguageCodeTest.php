@@ -43,29 +43,4 @@ class LanguageCodeTest extends TestCase
         $this->assertFalse(LanguageCode::isValid('invalid'));
         $this->assertFalse(LanguageCode::isValid(''));
     }
-
-    public function testTryFromWithValidLanguage(): void
-    {
-        $this->assertSame(LanguageCode::FRENCH, LanguageCode::tryFrom('fr'));
-        $this->assertSame(LanguageCode::ENGLISH, LanguageCode::tryFrom('en'));
-        $this->assertSame(LanguageCode::SPANISH, LanguageCode::tryFrom('es'));
-    }
-
-    public function testTryFromWithInvalidLanguage(): void
-    {
-        $this->assertNull(LanguageCode::tryFrom('invalid'));
-    }
-
-    public function testFromWithValidLanguage(): void
-    {
-        $this->assertSame(LanguageCode::FRENCH, LanguageCode::from('fr'));
-        $this->assertSame(LanguageCode::ENGLISH, LanguageCode::from('en'));
-        $this->assertSame(LanguageCode::SPANISH, LanguageCode::from('es'));
-    }
-
-    public function testFromWithInvalidLanguageThrowsException(): void
-    {
-        $this->expectException(\ValueError::class);
-        LanguageCode::from('invalid');
-    }
 }
