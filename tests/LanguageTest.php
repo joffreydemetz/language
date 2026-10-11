@@ -292,6 +292,22 @@ class LanguageTest extends TestCase
         $this->assertSame($plural, $language->pluralize($singular));
     }
 
+    public function testMetadataWithoutAnInflectorUsesTheDefaultOne(): void
+    {
+        $language = new class extends Language {
+            protected function loadLangMetadata(string $lang): array|false
+            {
+                $metas = parent::loadLangMetadata($lang);
+                unset($metas['inflector']);
+
+                return $metas;
+            }
+        };
+        $language->load('en');
+
+        $this->assertInstanceOf(DefaultInflector::class, $language->inflector);
+    }
+
     public function testAnUnknownInflectorFallsBackToTheDefaultOne(): void
     {
         $language = new class extends Language {
