@@ -190,6 +190,10 @@ Or directly with PHPUnit:
 vendor/bin/phpunit --colors=always --testdox
 ```
 
+## Changelog
+
+- **2.0.5** (2026-10-11) — `has()` asks the translator's catalogue (fallback locales included) instead of comparing the translation with the key: a translation equal to its key (`PDF: PDF`) is found, so `get()` returns it instead of the default and `getIf()` returns it instead of echoing the key.
+
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
