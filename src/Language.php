@@ -192,10 +192,13 @@ class Language implements LanguageInterface
     return $this->get($key, $parameters);
   }
 
+  /**
+   * Whether the catalogue holds the key (fallback locales included). It used to
+   * compare the translation with the key: a translation equal to its key read as missing.
+   */
   public function has(string $key, array $parameters = [], ?string $domain = null, ?string $locale = null): bool
   {
-    $trad = $this->trans($key, $parameters, $domain, $locale);
-    return $trad !== $key;
+    return $this->translator->getCatalogue($locale ?? $this->translator->getLocale())->has($key, $domain ?? 'messages');
   }
 
   protected function unescape(string $string): string

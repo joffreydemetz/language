@@ -162,6 +162,23 @@ class LanguageTest extends TestCase
         $this->assertTrue($language->has('existing'));
     }
 
+    /**
+     * 2.0.5: has() asks the catalogue. It used to compare the translation with the
+     * key, so a translation equal to its key ('PDF' => 'PDF') read as missing: get()
+     * answered the default and getIf() echoed the key — right by accident.
+     */
+    public function testATranslationEqualToItsKeyIsThere(): void
+    {
+        $language = (new Language())->load('fr');
+        $language->loadArray(['PDF' => 'PDF', 'CSV' => 'Tableur']);
+
+        $this->assertTrue($language->has('PDF'));
+        $this->assertSame('PDF', $language->get('PDF', [], 'a default that must not show'));
+        $this->assertSame('PDF', $language->getIf('PDF', [], 'a default that must not show'));
+        $this->assertSame('a default', $language->get('XLS', [], 'a default'));
+        $this->assertFalse($language->has('XLS'));
+    }
+
     public function testHasReturnsFalseForMissingKey(): void
     {
         $language = new Language();
